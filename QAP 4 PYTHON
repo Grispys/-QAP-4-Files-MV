@@ -2,10 +2,12 @@
 # AUTH - Matthew Verge
 # DATE - 13/03/2024
 
-# my three imported functions - Mo's Formatvalues, my Intput (adds input function where int is default), 
+# my three imported functions - Mo's Formatvalues, my Intput (adds input function where int is default), and validatePC, to check if postal codes are valid.
 import formatvalues as fv
-import intputFunc as inf
-# import x as x - placehjoldsdfer untilk i get a third function
+import intputFunc as inf 
+from validatePC import validate_pCode
+
+import datetime
 
 NP_NUMBER      = 1944
 BASIC_PREM     = 869.00
@@ -14,77 +16,202 @@ EXTRA_LIA_COV  = 130.00
 GLASS_COV      = 86.00
 LOAN_COV       = 58.00
 HST_RATE       = .15
-MONTHLY_PAY    = 39.99
+PROC_FEE       = 39.99
+curDate = datetime.datetime.today()
 
+#empty lists to put claims in
+claimNumL  = []
+claimDateL = []
+claimAmtL  = []
 
-
-# remember to add validations later andto ermvoe this comemetn
-# customer information
-custNameF = input("Enter the customer's first name: ").title()
-custNameL = input("Enter the customer's last name: ").title()
-address   = input("Enter the customer's address: ")
-city      = input("Enter the customer's city: ").title()
-province  = input("Enter the customer's province/territory: ")
-pc        = input("Enter the customer's postal code: ")
-phoneNum  = input("Enter the customer's phone number: ")
-# stop mixing up python with gdscript
-# cat information
-numCars   = inf.intput("Enter the number of cars being insured: ")
-
-
-
-LiabilityList = list(range(5000, 1000001))
-# ^ list for this 
-extraLiabDecis = input("Extra liability coverage (Y/N): ").upper()
-while True: #god isa watching
-    if extraLiabDecis =="Y":
-        while True:
-            extraLiab = inf.intput("Please enter the liability amount(5,000-1,000,000): ")
-            if extraLiab in LiabilityList:
-                extraLiabDSP = "${:,.2f}".format(extraLiab)
-                print(extraLiabDSP)
-                break
-            elif extraLiab not in LiabilityList:
-                print("Error - Please enter a value within the given choices")
-                continue
-        break           
-    elif extraLiabDecis =="N":
-        extraLiab = 0
-        break
-    else:
-        print("Error - Must be a number between given choices")
-        continue
-
-glassCov = input("Glass coverage (Y/N): ").upper()
-while True: 
-    if glassCov =="Y":
-        pass
-        break
-    elif glassCov =="N":
-        pass
-        break
-    else:
-        print("Error - please enter Y OR N.")
-
-loanerCar = input("Optional loaner car (Y/N): ").upper()
+# loop that entire program will be in.
 while True:
-    if loanerCar == "Y":
-        pass
-        break
-    elif loanerCar == "N":
-        pass
-        break
-    else:
-        print("Error - please enter Y OR N.")
+        
+        # remember to add validations later andto ermvoe this comemetn
+        # customer information
+            custNameF = input("Enter the customer's first name (End to exit): ").title()
+            if custNameF == "End":
+                print("Thank you for using our services!")
+                exit()
 
-payMethodList = ["Full", "Monthly", "Down Pay"]
-while True:
-    payMethod = input("Please enter the payment method (Full, Monthly, Down Pay)").title()
-    if payMethod in payMethodList:
-        print(payMethod)
-        if payMethod == "Down Pay":
-            downPayAmt = inf.intput("Please enter the down pay amount: ") # this might need a validation later remember to come back to this
-            break
-    elif payMethod not in payMethodList:
-        print("error")
+            custNameL = input("Enter the customer's last name: ").title()
+            address   = input("Enter the customer's address: ")
+            city      = input("Enter the customer's city: ").title()
+            province  = input("Enter the customer's province/territory: ")
+            pCode       = input("Enter the customer's postal code (A0A-0A0): ")
+            while not validate_pCode(pCode):
+                print("Error - Please enter a valid Canadian postal code.")
+                pCode = input("Enter the customer's postal code: ")
+            phoneNum  = input("Enter the customer's phone number: ")
+            
+            # stop mixing up python with gdscript
+           
+           
+           
+           
+            # cat information
+            while True:
+                numCars   = inf.intput("Enter the number of cars being insured: ")
+                if numCars == 1:
+                    insurPrem = numCars * BASIC_PREM
+                    break      
+                elif numCars >= 2:
+                    extraCarPrem = BASIC_PREM * .75
+                    insurPrem = 869.00 + ((numCars - 1) * extraCarPrem)
+                    break
+                else:
+                     print("Error - Please enter a value of 1 or higher.")
+                
+                    
+            # use this to calculate insurance premiums
 
+
+
+
+            # ^ list for this 
+            while True:                 
+                extraLiabDecis = input("Extra liability coverage (Y/N): ").upper()
+                if extraLiabDecis =="Y":
+                        extraLiab = (numCars * EXTRA_LIA_COV)
+                        
+                        break
+                elif extraLiabDecis =="N":
+                     extraLiab = 0
+                     break
+                else:
+                     print("Error - please enter Y OR N.")
+
+            
+            while True: 
+                glassCovDecis = input("Glass coverage (Y/N): ").upper()
+                if glassCovDecis =="Y":
+                    glassCov = numCars * GLASS_COV
+                   
+                    break
+                elif glassCovDecis =="N":
+                    glassCov = 0
+                    break
+                else:
+                    print("Error - please enter Y OR N.")
+
+            loanerCarDecis = input("Optional loaner car (Y/N): ").upper()
+            while True:
+                if loanerCarDecis == "Y":
+                    loanerCar = numCars * LOAN_COV
+                    
+                    break
+                elif loanerCarDecis == "N":
+                    loanerCar = 0
+                    break
+                else:
+                    print("Error - please enter Y OR N.")
+
+            # PRINT THESE AS PART OF RECEIPT
+            totalExtraCosts    = loanerCar + glassCov + extraLiab
+            totalInsurancePrem = insurPrem + totalExtraCosts
+            HSTamt             = totalInsurancePrem * HST_RATE
+            totalCost          = totalInsurancePrem + HSTamt
+
+            payMethodList = ["Full", "Monthly", "Down Pay"]
+            while True:
+                downPayAmt = 0.00
+                payMethod = input("Please enter the payment method (Full, Monthly, Down Pay)").title()
+                if payMethod in payMethodList:
+                    print(payMethod)
+                    if payMethod == "Full":
+                        # when paymethod is in full, the pay amount is just the total cost. do this
+                        paymentAmt = totalCost
+                        break
+                    elif payMethod == "Monthly":
+                        # when paymethod is monthly, it's just total cost + processing fee of 39.99, divided by 8 (months)
+                        paymentAmt = (totalCost + PROC_FEE) / 8
+                        break
+                    elif payMethod == "Down Pay":
+                        downPayAmt = inf.intput("Please enter the down pay amount: ") 
+                        # when paymethod is down pay, it's ((totalcost - downpayamt) + 39.99) / 8 (months) 
+                        paymentAmt = ((totalCost - downPayAmt) + PROC_FEE) / 8 
+                        break
+                elif payMethod not in payMethodList:
+                    print("Error - Please enter one of the stated methods!")
+            
+            while True:
+                 
+                 claimNum = input("Please enter the claim number (End to exit): ").title()
+                 if claimNum =="End":
+                      print("this is working")
+                      break   
+                 if claimNum =="":                      
+                    print("Error - cannot be blank")
+                           
+                 else:
+                     claimDate = input("Please enter the claim date (YYYY-MM-DD): ")
+                     claimAmt = float(input("Please enter the claim amount: "))
+                     claimNumL.append(claimNum)
+                     claimAmtL.append(claimAmt)
+                     claimDateL.append(claimDate)
+                     
+
+            # invoice + payment date calculations
+            invoiceDate = curDate.strftime("%d-%m-%Y")
+            print(invoiceDate)
+            if curDate.month == 12:                    
+                paymentDate = datetime.date(curDate.year + 1,1,1)
+                paymentDate = paymentDate.strftime("%d-%m-%Y")
+            else:
+                paymentDate = datetime.date(curDate.year, curDate.month +1,1)
+                paymentDate = paymentDate.strftime("%d-%m-%Y")
+            
+            print(paymentDate)
+
+           
+            # IT'S TIME TO, P-P-P-P-P-P-P-P-P-P-P-P-P-P-P-P-P-P-RINT THE RECEIPT
+                #  at the bottom, print the claims!
+            
+            #ALL THAT'S LEFT TO DO IS TO FORMAT EACH OF THE VARIABLES AND REPRINT!!!!!!!!!!
+
+            #all formatted variables
+            extraLiabDSP          = fv.FDollar2(extraLiab)
+            glassCovDSP           = fv.FDollar2(glassCov)
+            loanerCarDSP          = fv.FDollar2(loanerCar)
+            totalExtraCostsDSP    = fv.FDollar2(totalExtraCosts)
+            totalInsurancePremDSP = fv.FDollar2(totalInsurancePrem)
+            HSTamtDSP             = fv.FDollar2(HSTamt)
+            totalCostDSP          = fv.FDollar2(totalCost)
+            downPayAmtDSP         = fv.FDollar2(downPayAmt)
+            paymentAmtDSP         = fv.FDollar2(paymentAmt)
+
+            print("-------------------------------------------------------")
+            print("              One Stop Insurance Company               ")
+            print("-------------------------------------------------------")
+            print(f"{custNameL}, {custNameF}            DATE:{invoiceDate}")
+            print(f"{phoneNum}                                            ")
+            print(f"{address}, {city}, {province}                         ")
+            print(f"{pCode}                                                  ")
+            print(f"                                                      ")
+            print(f"# CARS INSURED:                              {numCars}")
+            print(f"EXTRA LIAB.:                               {extraLiabDSP:>8s}")
+            print(f"GLASS COV.:                                 {glassCovDSP:>7s}")
+            print(f"OPTIONAL LOAN CAR:                         {loanerCarDSP:>8s}")
+            print(f"")
+            print(f"")
+            print(f"EXTRA COSTS:                         {totalExtraCostsDSP:>14s} ")
+            print(f"INSURANCE PREMIUM:                        {totalInsurancePremDSP:24s} ")
+            print(f"HST:                                        {HSTamtDSP:>5s} ")
+            print(f"                                                      ")
+            print(f"TOTAL COST:                               {totalCostDSP:>7s} ")
+            print(f"PAY METHOD:                                {payMethod}")
+            print(f"DOWN PAY:                                 {downPayAmtDSP:>9s}")
+            print(f"TOTAL:                                    {paymentAmtDSP:>7s}")
+            print(f"PAYMENT DATE:                            {paymentDate}")
+            print(f"------------------------------------------------------")
+            print(f"")
+
+            
+            print("Claims:")
+            print(f"          Claim #:  Claim date:  Claim amount:    ")
+            for i in range(len(claimNumL)):
+                 print(f"           {claimNumL[i]}   {claimDateL[i]:>5s}       ${claimAmtL[i]:>.2f}")
+                 print(f"             ")
+            NP_NUMBER +=1
+            print(f"Policy num: {NP_NUMBER}")
+            print()
